@@ -1,4 +1,6 @@
-use std::io::{Write, stdout};
+mod vec3;
+
+pub use vec3::*;
 
 fn main() {
     const IMAGE_WIDTH: u32 = 256;
@@ -8,9 +10,6 @@ fn main() {
 
     for i in (0..IMAGE_HEIGHT).rev() {
         for j in 0..IMAGE_WIDTH {
-            eprintln!("\rScanlines remaining: {}", i);
-            stdout().flush();
-
             let r = j as f32 / IMAGE_WIDTH as f32;
             let g = i as f32 / IMAGE_HEIGHT as f32;
             let b: f32 = 0.25;
@@ -22,4 +21,11 @@ fn main() {
             println!("{} {} {}", ir, ig, ib);
         }
     }
+    let x = Vec3::from(1., 1., 1.);
+    let mut y = Vec3::from(2., 2., 2.);
+    y /= 10.;
+
+    println!("{:?}", x / 16.);
+    println!("{:?}", y);
+    
 }
