@@ -21,11 +21,4 @@ fn main() {
             println!("{} {} {}", ir, ig, ib);
         }
     }
-    let x = Vec3::from(1., 1., 1.);
-    let mut y = Vec3::from(2., 2., 2.);
-    y /= 10.;
-
-    println!("{:?}", x / 16.);
-    println!("{:?}", y);
-    
 }

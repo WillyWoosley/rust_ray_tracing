@@ -1,4 +1,4 @@
-use std::ops::{Neg, Add, AddAssign, Mul, MulAssign, Div, DivAssign};
+use std::ops::{Neg, Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign};
 
 #[derive(Debug)]
 pub struct Vec3(f32, f32, f32);
@@ -15,23 +15,23 @@ impl Vec3 {
         Vec3(x, y, z)
     }
 
-    pub fn x(self) -> f32 {
+    pub fn x(&self) -> f32 {
         self.0
     }
 
-    pub fn y(self) -> f32 {
+    pub fn y(&self) -> f32 {
         self.1
     }
 
-    pub fn z(self) -> f32 {
+    pub fn z(&self) -> f32 {
         self.2
     }
 
-    pub fn length(self) -> f32 {
+    pub fn length(&self) -> f32 {
         self.length_squared().sqrt()
     }
 
-    pub fn length_squared(self) -> f32 {
+    pub fn length_squared(&self) -> f32 {
         self.0 * self.0 + self.1 * self.1 + self.2 * self.2
     }
 }
@@ -60,11 +60,43 @@ impl AddAssign for Vec3 {
     }
 }
 
+impl Sub for Vec3 {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self {
+        Vec3(self.0 - rhs.0, self.1 - rhs.1, self.2 - rhs.2)
+    }
+}
+
+impl SubAssign for Vec3 {
+    fn sub_assign(&mut self, rhs: Vec3) {
+        self.0 -= rhs.0;
+        self.1 -= rhs.1;
+        self.2 -= rhs.2;
+    }
+}
+
 impl Mul<f32> for Vec3 {
     type Output = Self;
 
-    fn mul (self, n: f32) -> Self::Output {
+    fn mul(self, n: f32) -> Self::Output {
         Vec3(self.0 * n, self.1 * n, self.2 * n)
+    }
+}
+
+impl Mul<Vec3> for f32 {
+    type Output = Vec3;
+
+    fn mul(self, v: Vec3) -> Self::Output {
+        Vec3(self * v.0, self * v.1, self * v.2)
+    }
+}
+
+impl Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, v: Vec3) -> Self::Output {
+        Vec3(self.0 * v.0, self.1 * v.1, self.2 * v.2)
     }
 }
 
@@ -79,8 +111,8 @@ impl MulAssign<f32> for Vec3 {
 impl Div<f32> for Vec3 {
     type Output = Self;
 
-    fn div(self, rhs: f32) -> Self::Output {
-        self * (1./rhs)
+    fn div(self, den: f32) -> Self::Output {
+        self * (1./den)
     }
 }
 
@@ -90,4 +122,21 @@ impl DivAssign<f32> for Vec3 {
         self.1 *= 1./rhs;
         self.2 *= 1./rhs;
     }
+}
+    
+pub fn dot(v1: &Vec3, v2: &Vec3) -> f32 {
+    v1.0 * v2.0 + v1.1 * v2.1 + v1.2 * v2.2
+}
+
+pub fn cross(v1: &Vec3, v2: &Vec3) -> Vec3 {
+    Vec3(
+        v1.1 * v2.2 - v1.2 * v2.1,
+        v1.2 * v2.0 - v1.0 * v2.2,
+        v1.0 * v2.1 - v1.1 * v2.0
+    )
+}
+
+pub fn unit_vector(v: Vec3) -> Vec3 {
+    let len = v.length();
+    v / len
 }
