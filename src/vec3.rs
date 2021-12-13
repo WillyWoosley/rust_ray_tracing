@@ -3,8 +3,8 @@ use std::ops::{Neg, Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssi
 #[derive(Debug)]
 pub struct Vec3(f32, f32, f32);
 
-type Point3 = Vec3;
-type Color = Vec3;
+pub type Point3 = Vec3;
+pub type Color = Vec3;
 
 impl Vec3 {
     pub fn new() -> Self {
