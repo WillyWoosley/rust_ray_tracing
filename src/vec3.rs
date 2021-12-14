@@ -1,6 +1,6 @@
 use std::ops::{Neg, Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vec3(f32, f32, f32);
 
 pub type Point3 = Vec3;
@@ -33,6 +33,12 @@ impl Vec3 {
 
     pub fn length_squared(&self) -> f32 {
         self.0 * self.0 + self.1 * self.1 + self.2 * self.2
+    }
+}
+
+impl Default for Vec3 {
+    fn default() -> Self {
+        Vec3::new()
     }
 }
 

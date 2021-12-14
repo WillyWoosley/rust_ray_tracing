@@ -1,10 +1,10 @@
 mod vec3;
 mod color;
+mod ray; 
 
-use std::fs::File;
-
-pub use vec3::*;
+use vec3::*;
 use color::*;
+use ray::*;
 
 fn main() {
     const IMAGE_WIDTH: u32 = 256;
@@ -15,16 +15,6 @@ fn main() {
     for i in (0..IMAGE_HEIGHT).rev() {
         eprintln!("Scanlines remaining: {}", i);
         for j in 0..IMAGE_WIDTH {
-            /*let r = j as f32 / IMAGE_WIDTH as f32;
-            let g = i as f32 / IMAGE_HEIGHT as f32;
-            let b: f32 = 0.25;
-            
-            let ir = (r * 256.).floor() as i32;
-            let ig = (g * 256.).floor() as i32;
-            let ib = (b * 256.).floor() as i32;
-            
-            println!("{} {} {}", ir, ig, ib);*/
-
             let pixel_color = Vec3::from(j as f32 / (IMAGE_WIDTH-1) as f32, 
                                          i as f32 / (IMAGE_HEIGHT-1) as f32, 
                                          0.25);
