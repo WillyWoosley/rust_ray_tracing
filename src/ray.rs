@@ -1,6 +1,6 @@
 use crate::vec3::{Point3, Vec3};
 
-struct Ray {
+pub struct Ray {
     orig: Point3, 
     dir: Vec3, 
 }
@@ -32,3 +32,4 @@ impl Ray {
         self.orig + t * self.dir
     }
 }
+
