@@ -10,19 +10,25 @@ const ASPECT_RATIO: f32 = 16./9.;
 const IMAGE_WIDTH: u32 = 400;
 const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
 
-fn hit_sphere(center: &Point3, radius: f32, ray: &Ray) -> bool {
+fn hit_sphere(center: &Point3, radius: f32, ray: &Ray) -> f32 {
     let oc = *ray.origin() - *center;
     let a = dot(ray.direction(), ray.direction());
     let b = 2. * dot(&oc, ray.direction());
     let c = dot(&oc, &oc) - radius * radius;
     let discriminant = b * b - 4. * a * c;
     
-    discriminant > 0.
+    if discriminant < 0. {
+        -1.
+    } else {
+        (-b - discriminant.sqrt()) / (2. * a)
+    }
 }
 
 fn ray_color(ray: &Ray) -> Color {
-    if hit_sphere(&Point3::from(0., 0., -1.), 0.5, ray) {
-        return Color::from(1., 0., 0.);
+    let t = hit_sphere(&Point3::from(0., 0., -1.), 0.5, ray);
+    if t > 0. {
+        let normal = unit_vector(ray.at(t) - Vec3::from(0., 0., -1.));
+        return 0.5 * Color::from(normal.x() + 1., normal.y() + 1., normal.z() + 1.);
     }
 
     let unit_direction = unit_vector(*ray.direction());
