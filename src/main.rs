@@ -1,10 +1,14 @@
 mod vec3;
 mod color;
 mod ray; 
+mod hittable;
+mod sphere;
 
 use vec3::*;
 use color::*;
 use ray::*;
+use hittable::*;
+use sphere::*;
 
 const ASPECT_RATIO: f32 = 16./9.;
 const IMAGE_WIDTH: u32 = 400;
@@ -12,15 +16,15 @@ const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
 
 fn hit_sphere(center: &Point3, radius: f32, ray: &Ray) -> f32 {
     let oc = *ray.origin() - *center;
-    let a = dot(ray.direction(), ray.direction());
-    let b = 2. * dot(&oc, ray.direction());
-    let c = dot(&oc, &oc) - radius * radius;
-    let discriminant = b * b - 4. * a * c;
+    let a = ray.direction().length_squared();
+    let half_b = dot(&oc, ray.direction());
+    let c = ray.direction().length_squared() - radius * radius;
+    let discriminant = half_b * half_b - a * c;
     
     if discriminant < 0. {
         -1.
     } else {
-        (-b - discriminant.sqrt()) / (2. * a)
+        (-half_b - discriminant.sqrt()) / a
     }
 }
 
