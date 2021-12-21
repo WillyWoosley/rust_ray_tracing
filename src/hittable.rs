@@ -10,9 +10,9 @@ pub struct HitRecord {
 impl HitRecord {
     pub fn from(t: f32, ray: &Ray, normal: Vec3) -> Self {
         let mut record = HitRecord {
-            t: t,
+            t,
+            normal,
             p: ray.at(t),
-            normal: normal,
             front_face: false,
         };
         record.set_face_normal(ray);
@@ -30,12 +30,16 @@ pub trait Hittable {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
 }
 
-struct HittableList<T: Hittable> {
+pub struct HittableList<T: Hittable> {
     objects: Vec<Box<T>>,
 }
 
 impl<T: Hittable> HittableList<T> {
-    pub fn add(&mut self, item: T) {
+    pub fn new() -> Self {
+        HittableList {objects: Vec::new()}
+    }
+
+    pub fn push(&mut self, item: T) {
         self.objects.push(Box::new(item));
     }
 }
