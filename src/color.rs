@@ -23,9 +23,9 @@ pub fn write_color(file: &mut File, color: &Color, samples: u32) -> Result<(), E
 
 fn generate_color(color: &Color, samples: u32) -> RGB {
     let scale = 1. / samples as f32;
-    let r = color.x() * scale;
-    let g = color.y() * scale;
-    let b = color.z() * scale;
+    let r = (color.x() * scale).sqrt();
+    let g = (color.y() * scale).sqrt();
+    let b = (color.z() * scale).sqrt();
 
     RGB {
         r: ((256. * r.clamp(0., 0.999)).floor()) as u32,

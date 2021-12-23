@@ -1,3 +1,5 @@
+use rand::prelude::*;
+
 use std::ops::{Neg, Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign};
 
 #[derive(Debug, Clone, Copy)]
@@ -33,6 +35,23 @@ impl Vec3 {
 
     pub fn length_squared(&self) -> f32 {
         self.0 * self.0 + self.1 * self.1 + self.2 * self.2
+    }
+
+    pub fn random_in_unit_sphere() -> Self {
+        let mut rng = rand::thread_rng();
+        loop {
+            let v = Vec3::from(rng.gen_range(-1.0..1.),
+                               rng.gen_range(-1.0..1.),
+                               rng.gen_range(-1.0..1.));
+            if v.length_squared() < 1. {
+                return v;
+            }
+        }
+
+    }
+    
+    pub fn random_unit_vector() -> Self {
+        unit_vector(Vec3::random_in_unit_sphere())
     }
 }
 
