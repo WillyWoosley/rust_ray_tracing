@@ -4,6 +4,7 @@ mod ray;
 mod hittable;
 mod sphere;
 mod camera;
+mod material;
 
 use vec3::*;
 use color::*;
@@ -11,6 +12,7 @@ use ray::*;
 use hittable::*;
 use sphere::*;
 use camera::*;
+use material::*;
 
 use rand::prelude::*;
 
@@ -25,7 +27,7 @@ fn ray_color<T: Hittable>(ray: &Ray, world: &T, depth: u32) -> Color {
         return Color::new();
     }
 
-    if let Some(record) = world.hit(ray, 0.001, f32::INFINITY) {
+    if let Some(record) = world.hit::<T>(ray, 0.001, f32::INFINITY) {
         let target = record.p + record.normal + Vec3::random_unit_vector();
         return 0.5 * ray_color(&Ray::from(record.p, target - record.p), world, depth-1);
     }
@@ -36,9 +38,10 @@ fn ray_color<T: Hittable>(ray: &Ray, world: &T, depth: u32) -> Color {
 }
 
 fn main() {
-    let mut world = HittableList::new();    
-    world.push(Sphere::from(Point3::from(0., 0., -1.), 0.5));
-    world.push(Sphere::from(Point3::from(0., -100.5, -1.), 100.));
+    let mut world = HittableList::new();
+    let material = Material::from(Color::new());
+    world.push(Sphere::from(Point3::from(0., 0., -1.), 0.5, material));
+    world.push(Sphere::from(Point3::from(0., -100.5, -1.), 100., material));
 
     let camera = Camera::new();
 
