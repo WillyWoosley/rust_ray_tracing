@@ -5,7 +5,7 @@ use crate::hittable::HitRecord;
 pub trait Material {
     fn scatter(&self,
                incident: &Ray, 
-               record: &HitRecord<T>, 
+               record: &HitRecord, 
                attenuation: &Color, 
                scattered: &Ray) -> bool;
 }
@@ -20,3 +20,12 @@ impl Lambertian {
     }
 }
 
+impl Material for Lambertian {
+    fn scatter(&self, 
+               incident: &Ray, 
+               record: &HitRecord, 
+               attenuation: &Color, 
+               scattered: &Ray) -> bool {
+        true
+    }
+}

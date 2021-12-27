@@ -29,7 +29,7 @@ impl<'a> HitRecord<'a> {
 }
 
 pub trait Hittable {
-    fn hit<T: Material>(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord<T>>;
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
 }
 
 pub struct HittableList<T> {
@@ -47,7 +47,7 @@ impl<T: Hittable> HittableList<T> {
 }
 
 impl<T: Hittable> Hittable for HittableList<T> {
-    fn hit<M: Material>(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord<M>> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let mut hit_rec = None;
         let mut closest = t_max;
 
