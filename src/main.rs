@@ -23,13 +23,20 @@ const SAMPLES: u32 = 100;
 const MAX_DEPTH: u32 = 50;
 
 fn ray_color<T: Hittable>(ray: &Ray, world: &T, depth: u32) -> Color {
-    if depth <= 0 {
+    // Check if we've exceeded the 'bounce limit'
+    if depth == 0 {
         return Color::new();
     }
 
     if let Some(record) = world.hit(ray, 0.001, f32::INFINITY) {
-        let target = record.p + record.normal + Vec3::random_unit_vector();
-        return 0.5 * ray_color(&Ray::from(record.p, target - record.p), world, depth-1);
+        let mut scattered = Ray::new();
+        let mut attenuation = Color::new();
+        
+        if record.material.scatter(ray, &record, &mut attenuation, &mut scattered) {
+            return attenuation * ray_color(&scattered, world, depth-1);
+        } else {
+            return Color::new();
+        }
     }
 
     let unit_direction = unit_vector(*ray.direction());
@@ -38,15 +45,24 @@ fn ray_color<T: Hittable>(ray: &Ray, world: &T, depth: u32) -> Color {
 }
 
 fn main() {
+    // World creation
     let mut world = HittableList::new();
-    let material = Lambertian::from(Color::new());
-    world.push(Sphere::from(Point3::from(0., 0., -1.), 0.5, material));
-    world.push(Sphere::from(Point3::from(0., -100.5, -1.), 100., material));
+    
+    let mat_ground = Lambertian::from(Color::from(0.8, 0.8, 0.));
+    let mat_center = Lambertian::from(Color::from(0.7, 0.3, 0.3));
+    let mat_left = Metal::from(Color::from(0.8, 0.8, 0.8));
+    let mat_right = Metal::from(Color::from(0.8, 0.6, 0.2));
+    
+    world.push(Sphere::from(Point3::from(0., -100.5, -1.), 100., mat_ground));
+    world.push(Sphere::from(Point3::from(0., 0., -1.), 0.5, mat_center));
+    world.push(Sphere::from(Point3::from(-1., 0., -1.), 0.5, mat_left));
+    world.push(Sphere::from(Point3::from(1., 0., -1.), 0.5, mat_right));
 
     let camera = Camera::new();
 
     let mut rng = rand::thread_rng();
 
+    // Rendering
     println!("P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
 
     for i in (0..IMAGE_HEIGHT).rev() {

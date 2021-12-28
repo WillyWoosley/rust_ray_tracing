@@ -53,6 +53,12 @@ impl Vec3 {
     pub fn random_unit_vector() -> Self {
         unit_vector(Vec3::random_in_unit_sphere())
     }
+
+    pub fn near_zero(&self) -> bool {
+        let min = 1e-8;
+
+        self.0.abs() < min && self.1.abs() < min && self.2.abs() < min
+    }
 }
 
 impl Default for Vec3 {
@@ -159,6 +165,10 @@ pub fn cross(v1: &Vec3, v2: &Vec3) -> Vec3 {
         v1.2 * v2.0 - v1.0 * v2.2,
         v1.0 * v2.1 - v1.1 * v2.0
     )
+}
+
+pub fn reflect(v1: &Vec3, v2: &Vec3) -> Vec3 {
+    *v1 - 2. * dot(v1, v2) * *v2
 }
 
 pub fn unit_vector(v: Vec3) -> Vec3 {
