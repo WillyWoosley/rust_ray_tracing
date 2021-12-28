@@ -50,8 +50,8 @@ fn main() {
     
     let mat_ground = Lambertian::from(Color::from(0.8, 0.8, 0.));
     let mat_center = Lambertian::from(Color::from(0.7, 0.3, 0.3));
-    let mat_left = Metal::from(Color::from(0.8, 0.8, 0.8));
-    let mat_right = Metal::from(Color::from(0.8, 0.6, 0.2));
+    let mat_left = Metal::from(Color::from(0.8, 0.8, 0.8), 0.3);
+    let mat_right = Metal::from(Color::from(0.8, 0.6, 0.2), 1.);
     
     world.push(Sphere::from(Point3::from(0., -100.5, -1.), 100., mat_ground));
     world.push(Sphere::from(Point3::from(0., 0., -1.), 0.5, mat_center));
