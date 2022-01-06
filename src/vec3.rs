@@ -171,6 +171,13 @@ pub fn reflect(v1: &Vec3, v2: &Vec3) -> Vec3 {
     *v1 - 2. * dot(v1, v2) * *v2
 }
 
+pub fn refract(uv: Vec3, n: Vec3, etai_over_etat: f32) -> Vec3 {
+    let cos_theta = dot(&-uv, &n).min(1.);
+    let r_out_perp = etai_over_etat * (uv + cos_theta * n);
+    let r_out_para = -(((1. - r_out_perp.length_squared()).abs()).sqrt()) * n;
+    r_out_perp + r_out_para
+}
+
 pub fn unit_vector(v: Vec3) -> Vec3 {
     let len = v.length();
     v / len

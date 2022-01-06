@@ -10,6 +10,7 @@ pub trait Material {
                scattered: &mut Ray) -> bool;
 }
 
+/// Lambertian material
 pub struct Lambertian {
     albedo: Color,
 }
@@ -40,6 +41,7 @@ impl Material for Lambertian {
     }
 }
 
+/// Metal material
 pub struct Metal {
     albedo: Color,
     fuzz: f32,
@@ -65,5 +67,34 @@ impl Material for Metal {
         *attenuation = self.albedo;
         
         dot(scattered.direction(), &record.normal) > 0.
+    }
+}
+
+/// Dielectric material
+pub struct Dielectric {
+    refraction: f32,
+}
+
+impl Dielectric {
+    pub fn from(refraction: f32) -> Self {
+        Dielectric {refraction}
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(&self,
+               incident: &Ray, 
+               record: &HitRecord, 
+               attenuation: &mut Color, 
+               scattered: &mut Ray) -> bool {
+        let refraction_ratio = if record.front_face {1./self.refraction} 
+                               else {self.refraction};
+        let unit_direction = unit_vector(*incident.direction());
+        let refracted = refract(unit_direction, record.normal, refraction_ratio);
+
+        *attenuation = Color::from(1., 1., 1.);
+        *scattered = Ray::from(record.p, refracted);
+        
+        true
     }
 }
