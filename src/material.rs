@@ -1,3 +1,5 @@
+use rand::random;
+
 use crate::ray::Ray;
 use crate::vec3::*;
 use crate::hittable::HitRecord;
@@ -79,6 +81,12 @@ impl Dielectric {
     pub fn from(refraction: f32) -> Self {
         Dielectric {refraction}
     }
+
+    // Schlick approximation for reflectance
+    fn reflectance(cos: f32, ref_idx: f32) -> f32 {
+        let r0 = ((1. - ref_idx) / (1. + ref_idx)).powi(2);
+        r0 + (1. - r0) * (1. - cos).powi(5)
+    }
 }
 
 impl Material for Dielectric {
@@ -90,11 +98,21 @@ impl Material for Dielectric {
         let refraction_ratio = if record.front_face {1./self.refraction} 
                                else {self.refraction};
         let unit_direction = unit_vector(*incident.direction());
-        let refracted = refract(unit_direction, record.normal, refraction_ratio);
+
+        let cos_theta = dot(&-unit_direction, &record.normal).min(1.); 
+        let sin_theta = (1. - cos_theta*cos_theta).sqrt();
+
+        let direction = 
+            if refraction_ratio * sin_theta > 1. ||
+               Self::reflectance(cos_theta, refraction_ratio) > random::<f32>() {
+                reflect(&unit_direction, &record.normal)
+            } else {
+                refract(unit_direction, record.normal, refraction_ratio)
+            };
 
         *attenuation = Color::from(1., 1., 1.);
-        *scattered = Ray::from(record.p, refracted);
-        
+        *scattered = Ray::from(record.p, direction);
+
         true
     }
 }

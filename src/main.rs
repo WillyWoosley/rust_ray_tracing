@@ -49,13 +49,15 @@ fn main() {
     let mut world = HittableList::new();
     
     let mat_ground = Lambertian::from(Color::from(0.8, 0.8, 0.));
-    let mat_center = Dielectric::from(1.5);
+    let mat_center = Lambertian::from(Color::from(0.1, 0.2, 0.5));
     let mat_left = Dielectric::from(1.5);
-    let mat_right = Metal::from(Color::from(0.8, 0.6, 0.2), 1.);
+    let mat_left_2 = Dielectric::from(1.5);
+    let mat_right = Metal::from(Color::from(0.8, 0.6, 0.2), 0.);
     
     world.push(Sphere::from(Point3::from(0., -100.5, -1.), 100., mat_ground));
     world.push(Sphere::from(Point3::from(0., 0., -1.), 0.5, mat_center));
     world.push(Sphere::from(Point3::from(-1., 0., -1.), 0.5, mat_left));
+    world.push(Sphere::from(Point3::from(-1., 0., -1.), -0.4, mat_left_2));
     world.push(Sphere::from(Point3::from(1., 0., -1.), 0.5, mat_right));
 
     let camera = Camera::new();
