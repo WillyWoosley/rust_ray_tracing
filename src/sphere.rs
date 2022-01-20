@@ -1,13 +1,15 @@
+use std::rc::Rc;
+
 use crate::{Point3, Ray, HitRecord, Hittable, dot, Material};
 
 pub struct Sphere<T: Material> {
     center: Point3,
     radius: f32,
-    material: T,
+    material: Rc<T>,
 }
 
 impl<T: Material> Sphere<T> {
-    pub fn from(center: Point3, radius: f32, material: T) -> Self {
+    pub fn from(center: Point3, radius: f32, material: Rc<T>) -> Self {
         Sphere {center, radius, material}
     }
 }
@@ -33,7 +35,7 @@ impl<T: Material> Hittable for Sphere<T> {
         }
 
         let normal = (ray.at(root) - self.center) / self.radius;
-        let record = HitRecord::from(root, ray, normal, &self.material);
+        let record = HitRecord::from(root, ray, normal, self.material.clone());
         
         Some(record)
     }
