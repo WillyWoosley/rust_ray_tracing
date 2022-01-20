@@ -64,7 +64,7 @@ impl Material for Metal {
                record: &HitRecord,
                attenuation: &mut Color,
                scattered: &mut Ray) -> bool {
-        let reflected = reflect(&unit_vector(incident.direction().clone()), &record.normal);
+        let reflected = reflect(&unit_vector(*incident.direction()), &record.normal);
         *scattered = Ray::from(record.p, reflected + (self.fuzz * Vec3::random_in_unit_sphere()));
         *attenuation = self.albedo;
         

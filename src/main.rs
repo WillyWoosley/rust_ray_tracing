@@ -1,3 +1,7 @@
+use std::rc::Rc;
+
+use rand::prelude::*;
+
 mod vec3;
 mod color;
 mod ray; 
@@ -13,10 +17,6 @@ use hittable::*;
 use sphere::*;
 use camera::*;
 use material::*;
-
-use std::rc::Rc;
-
-use rand::prelude::*;
 
 const ASPECT_RATIO: f32 = 16./9.;
 const IMAGE_WIDTH: u32 = 400;
@@ -49,23 +49,25 @@ fn ray_color<T: Hittable>(ray: &Ray, world: &T, depth: u32) -> Color {
 fn main() {
     // World creation
     let mut world = HittableList::new();
-    
-    let mat_ground = Rc::new(Lambertian::from(Color::from(0.8, 0.8, 0.)));
+
+    let mat_ground = Rc::new(Lambertian::from(Color::from(0.8, 0.8, 0.))); 
     let mat_center = Rc::new(Lambertian::from(Color::from(0.1, 0.2, 0.5)));
     let mat_left = Rc::new(Dielectric::from(1.5));
     let mat_right = Rc::new(Metal::from(Color::from(0.8, 0.6, 0.2), 0.));
-    
+
     world.push(Sphere::from(Point3::from(0., -100.5, -1.), 100., Rc::clone(&mat_ground)));
     world.push(Sphere::from(Point3::from(0., 0., -1.), 0.5, Rc::clone(&mat_center)));
     world.push(Sphere::from(Point3::from(-1., 0., -1.), 0.5, Rc::clone(&mat_left)));
-    world.push(Sphere::from(Point3::from(-1., 0., -1.), -0.4, Rc::clone(&mat_left)));
+    world.push(Sphere::from(Point3::from(-1., 0., -1.), -0.45, Rc::clone(&mat_left)));
     world.push(Sphere::from(Point3::from(1., 0., -1.), 0.5, Rc::clone(&mat_right)));
 
-    let camera = Camera::new();
-
-    let mut rng = rand::thread_rng();
+    // Camera
+    let camera = Camera::new(Point3::from(-2., 2., 1.), Point3::from(0., 0., -1.),
+                             Vec3::from(0., 1., 0.), 20., ASPECT_RATIO);
 
     // Rendering
+    let mut rng = rand::thread_rng();
+
     println!("P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
 
     for i in (0..IMAGE_HEIGHT).rev() {
