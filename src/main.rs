@@ -62,8 +62,10 @@ fn main() {
     world.push(Sphere::from(Point3::from(1., 0., -1.), 0.5, Rc::clone(&mat_right)));
 
     // Camera
-    let camera = Camera::new(Point3::from(-2., 2., 1.), Point3::from(0., 0., -1.),
-                             Vec3::from(0., 1., 0.), 20., ASPECT_RATIO);
+    let view_from = Point3::from(3., 3., 2.);
+    let view_at = Point3::from(0., 0., -1.);
+    let camera = Camera::new(view_from, view_at, Vec3::from(0., 1., 0.), 20.,
+                             ASPECT_RATIO, 2., (view_from - view_at).length());
 
     // Rendering
     let mut rng = rand::thread_rng();
