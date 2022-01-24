@@ -18,11 +18,57 @@ use sphere::*;
 use camera::*;
 use material::*;
 
-const ASPECT_RATIO: f32 = 16./9.;
-const IMAGE_WIDTH: u32 = 400;
+const ASPECT_RATIO: f32 = 3./2.;
+const IMAGE_WIDTH: u32 = 1200;
 const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
-const SAMPLES: u32 = 100;
+const SAMPLES: u32 = 500;
 const MAX_DEPTH: u32 = 50;
+
+fn random_scene() -> HittableList {
+    let mut world = HittableList::new();
+
+    let mat_ground = Rc::new(Lambertian::from(Color::from(0.5, 0.5, 0.5)));
+    world.push(Sphere::from(Point3::from(0., -1000., 0.), 1000., Rc::clone(&mat_ground)));
+
+    let mut rng = rand::thread_rng();
+    for i in -11..11 {
+        for j in -11..11 {
+            let mat_type: f32 = rng.gen();
+            let center = Point3::from(i as f32 + 0.9 * rng.gen::<f32>(), 
+                                      0.2, 
+                                      j as f32 + 0.9 * rng.gen::<f32>());
+            
+            if (center - Point3::from(4., 0.2, 0.)).length() > 0.9 {
+                if mat_type < 0.8 { // Make Diffuse sphere
+                    let mat_sphere = Rc::new(Lambertian::from(
+                                                Color::from(rng.gen::<f32>(), 
+                                                            rng.gen::<f32>(), 
+                                                            rng.gen::<f32>())));
+                    world.push(Sphere::from(center, 0.2, Rc::clone(&mat_sphere)));
+                } else if mat_type < 0.95 { // Make Metal sphere
+                    let mat_sphere = Rc::new(Metal::from(
+                                                Color::from(rng.gen_range(0.5..1.),
+                                                            rng.gen_range(0.5..1.),
+                                                            rng.gen_range(0.5..1.)),
+                                                rng.gen_range(0.0..0.5)));
+                    world.push(Sphere::from(center, 0.2, Rc::clone(&mat_sphere)));
+                } else { // Make Glass sphere
+                    let mat_sphere = Rc::new(Dielectric::from(1.5));
+                    world.push(Sphere::from(center, 0.2, Rc::clone(&mat_sphere)));
+                }
+            }
+        }
+    }
+
+    let mat1 = Rc::new(Dielectric::from(1.5));
+    let mat2 = Rc::new(Lambertian::from(Color::from(0.4, 0.2, 0.1)));
+    let mat3 = Rc::new(Metal::from(Color::from(0.7, 0.6, 0.5), 0.));
+    world.push(Sphere::from(Point3::from(0., 1., 0.), 1., Rc::clone(&mat1)));
+    world.push(Sphere::from(Point3::from(-4., 1., 0.), 1., Rc::clone(&mat2)));
+    world.push(Sphere::from(Point3::from(4., 1., 0.), 1., Rc::clone(&mat3)));
+
+    world
+}
 
 fn ray_color<T: Hittable>(ray: &Ray, world: &T, depth: u32) -> Color {
     // Check if we've exceeded the 'bounce limit'
@@ -47,25 +93,13 @@ fn ray_color<T: Hittable>(ray: &Ray, world: &T, depth: u32) -> Color {
 }
 
 fn main() {
-    // World creation
-    let mut world = HittableList::new();
-
-    let mat_ground = Rc::new(Lambertian::from(Color::from(0.8, 0.8, 0.))); 
-    let mat_center = Rc::new(Lambertian::from(Color::from(0.1, 0.2, 0.5)));
-    let mat_left = Rc::new(Dielectric::from(1.5));
-    let mat_right = Rc::new(Metal::from(Color::from(0.8, 0.6, 0.2), 0.));
-
-    world.push(Sphere::from(Point3::from(0., -100.5, -1.), 100., Rc::clone(&mat_ground)));
-    world.push(Sphere::from(Point3::from(0., 0., -1.), 0.5, Rc::clone(&mat_center)));
-    world.push(Sphere::from(Point3::from(-1., 0., -1.), 0.5, Rc::clone(&mat_left)));
-    world.push(Sphere::from(Point3::from(-1., 0., -1.), -0.45, Rc::clone(&mat_left)));
-    world.push(Sphere::from(Point3::from(1., 0., -1.), 0.5, Rc::clone(&mat_right)));
+    let world = random_scene();
 
     // Camera
-    let view_from = Point3::from(3., 3., 2.);
-    let view_at = Point3::from(0., 0., -1.);
+    let view_from = Point3::from(13., 2., 3.);
+    let view_at = Point3::from(0., 0., 0.);
     let camera = Camera::new(view_from, view_at, Vec3::from(0., 1., 0.), 20.,
-                             ASPECT_RATIO, 2., (view_from - view_at).length());
+                             ASPECT_RATIO, 0.1, 10.);
 
     // Rendering
     let mut rng = rand::thread_rng();
