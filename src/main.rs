@@ -1,4 +1,5 @@
-use std::rc::Rc;
+use std::fs;
+use std::sync::Arc;
 
 use rand::prelude::*;
 
@@ -19,16 +20,16 @@ use camera::*;
 use material::*;
 
 const ASPECT_RATIO: f32 = 3./2.;
-const IMAGE_WIDTH: u32 = 1200;
+const IMAGE_WIDTH: u32 = 300;
 const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
-const SAMPLES: u32 = 500;
-const MAX_DEPTH: u32 = 50;
+const SAMPLES: u32 = 10;
+const MAX_DEPTH: u32 = 5;
 
 fn random_scene() -> HittableList {
     let mut world = HittableList::new();
 
-    let mat_ground = Rc::new(Lambertian::from(Color::from(0.5, 0.5, 0.5)));
-    world.push(Sphere::from(Point3::from(0., -1000., 0.), 1000., Rc::clone(&mat_ground)));
+    let mat_ground = Arc::new(Lambertian::from(Color::from(0.5, 0.5, 0.5)));
+    world.push(Sphere::from(Point3::from(0., -1000., 0.), 1000., Arc::clone(&mat_ground)));
 
     let mut rng = rand::thread_rng();
     for i in -11..11 {
@@ -40,32 +41,32 @@ fn random_scene() -> HittableList {
             
             if (center - Point3::from(4., 0.2, 0.)).length() > 0.9 {
                 if mat_type < 0.8 { // Make Diffuse sphere
-                    let mat_sphere = Rc::new(Lambertian::from(
+                    let mat_sphere = Arc::new(Lambertian::from(
                                                 Color::from(rng.gen::<f32>(), 
                                                             rng.gen::<f32>(), 
                                                             rng.gen::<f32>())));
-                    world.push(Sphere::from(center, 0.2, Rc::clone(&mat_sphere)));
+                    world.push(Sphere::from(center, 0.2, Arc::clone(&mat_sphere)));
                 } else if mat_type < 0.95 { // Make Metal sphere
-                    let mat_sphere = Rc::new(Metal::from(
+                    let mat_sphere = Arc::new(Metal::from(
                                                 Color::from(rng.gen_range(0.5..1.),
                                                             rng.gen_range(0.5..1.),
                                                             rng.gen_range(0.5..1.)),
                                                 rng.gen_range(0.0..0.5)));
-                    world.push(Sphere::from(center, 0.2, Rc::clone(&mat_sphere)));
+                    world.push(Sphere::from(center, 0.2, Arc::clone(&mat_sphere)));
                 } else { // Make Glass sphere
-                    let mat_sphere = Rc::new(Dielectric::from(1.5));
-                    world.push(Sphere::from(center, 0.2, Rc::clone(&mat_sphere)));
+                    let mat_sphere = Arc::new(Dielectric::from(1.5));
+                    world.push(Sphere::from(center, 0.2, Arc::clone(&mat_sphere)));
                 }
             }
         }
     }
 
-    let mat1 = Rc::new(Dielectric::from(1.5));
-    let mat2 = Rc::new(Lambertian::from(Color::from(0.4, 0.2, 0.1)));
-    let mat3 = Rc::new(Metal::from(Color::from(0.7, 0.6, 0.5), 0.));
-    world.push(Sphere::from(Point3::from(0., 1., 0.), 1., Rc::clone(&mat1)));
-    world.push(Sphere::from(Point3::from(-4., 1., 0.), 1., Rc::clone(&mat2)));
-    world.push(Sphere::from(Point3::from(4., 1., 0.), 1., Rc::clone(&mat3)));
+    let mat1 = Arc::new(Dielectric::from(1.5));
+    let mat2 = Arc::new(Lambertian::from(Color::from(0.4, 0.2, 0.1)));
+    let mat3 = Arc::new(Metal::from(Color::from(0.7, 0.6, 0.5), 0.));
+    world.push(Sphere::from(Point3::from(0., 1., 0.), 1., Arc::clone(&mat1)));
+    world.push(Sphere::from(Point3::from(-4., 1., 0.), 1., Arc::clone(&mat2)));
+    world.push(Sphere::from(Point3::from(4., 1., 0.), 1., Arc::clone(&mat3)));
 
     world
 }
@@ -103,7 +104,6 @@ fn main() {
 
     // Rendering
     let mut rng = rand::thread_rng();
-
     println!("P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
 
     for i in (0..IMAGE_HEIGHT).rev() {
@@ -119,7 +119,7 @@ fn main() {
                 let ray = camera.get_ray(u, v);
                 pixel_color += ray_color(&ray, &world, MAX_DEPTH)
             }
-            print_color(&pixel_color, SAMPLES);
+            println!("{}", format_color(&pixel_color, SAMPLES));
         }
     }
 

@@ -1,15 +1,15 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{Point3, Ray, HitRecord, Hittable, dot, Material};
 
 pub struct Sphere<T: Material> {
     center: Point3,
     radius: f32,
-    material: Rc<T>,
+    material: Arc<T>,
 }
 
 impl<T: Material> Sphere<T> {
-    pub fn from(center: Point3, radius: f32, material: Rc<T>) -> Self {
+    pub fn from(center: Point3, radius: f32, material: Arc<T>) -> Self {
         Sphere {center, radius, material}
     }
 }

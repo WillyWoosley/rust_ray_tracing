@@ -10,9 +10,9 @@ struct RGB {
     b: u32,
 }
 
-pub fn print_color(color: &Color, samples: u32) {
+pub fn format_color(color: &Color, samples: u32) -> String {
     let converted = generate_color(color, samples);
-    println!("{} {} {}", converted.r, converted.g, converted.b);
+    format!("{} {} {}", converted.r, converted.g, converted.b)
 }
 
 pub fn write_color(file: &mut File, color: &Color, samples: u32) -> Result<(), Error> {

@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{Ray, Point3, Vec3, dot, Material};
 
@@ -7,11 +7,11 @@ pub struct HitRecord<'a> {
     pub normal: Vec3,
     pub t: f32,
     pub front_face: bool,
-    pub material: Rc<dyn Material + 'a>,
+    pub material: Arc<dyn Material + 'a>,
 }
 
 impl<'a> HitRecord<'a> {
-    pub fn from(t: f32, ray: &Ray, normal: Vec3, material: Rc<dyn Material + 'a>) -> Self {
+    pub fn from(t: f32, ray: &Ray, normal: Vec3, material: Arc<dyn Material + 'a>) -> Self {
         let mut record = HitRecord {
             t,
             normal,
