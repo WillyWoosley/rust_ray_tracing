@@ -30,7 +30,7 @@ impl<'a> HitRecord<'a> {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Sync {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
 }
 
@@ -63,3 +63,4 @@ impl Hittable for HittableList {
         hit_rec
     }
 }
+

@@ -2,6 +2,7 @@ use std::fs;
 use std::sync::Arc;
 
 use rand::prelude::*;
+use rayon::prelude::*;
 
 mod vec3;
 mod color;
@@ -22,8 +23,8 @@ use material::*;
 const ASPECT_RATIO: f32 = 3./2.;
 const IMAGE_WIDTH: u32 = 300;
 const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
-const SAMPLES: u32 = 10;
-const MAX_DEPTH: u32 = 5;
+const SAMPLES: u32 = 50;
+const MAX_DEPTH: u32 = 10;
 
 fn random_scene() -> HittableList {
     let mut world = HittableList::new();
@@ -103,7 +104,35 @@ fn main() {
                              ASPECT_RATIO, 0.1, 10.);
 
     // Rendering
-    let mut rng = rand::thread_rng();
+    // 255 in header denotes max color value
+    let ppm_header = format!("P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
+
+    let image_data =
+        (0..IMAGE_HEIGHT).into_par_iter().rev().map(|i| {
+            (0..IMAGE_WIDTH).into_par_iter().map(|j| {
+                let mut rng = rand::thread_rng();
+                let mut pixel_color = Color::new();
+                for _ in 0..SAMPLES {
+                    let r1: f32 = rng.gen();
+                    let r2: f32 = rng.gen();
+                    let u = (j as f32 + r1) / (IMAGE_WIDTH - 1) as f32;
+                    let v = (i as f32 + r2) / (IMAGE_HEIGHT - 1) as f32;
+
+                    let ray = camera.get_ray(u, v);
+                    pixel_color += ray_color(&ray, &world, MAX_DEPTH);
+                }
+                format_color(&pixel_color, SAMPLES) 
+            }).collect::<Vec<String>>().join("")
+        }).collect::<Vec<String>>().join("");
+    
+    let final_pic = format!("{}{}", ppm_header, image_data);
+
+    match fs::write("final.ppm", final_pic) {
+        Ok(_) => (),
+        Err(_) => eprintln!("Error writing image data"),
+    }
+ 
+/*
     println!("P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
 
     for i in (0..IMAGE_HEIGHT).rev() {
@@ -124,4 +153,5 @@ fn main() {
     }
 
     eprintln!("Done.");
+*/
 }

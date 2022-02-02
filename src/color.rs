@@ -12,7 +12,7 @@ struct RGB {
 
 pub fn format_color(color: &Color, samples: u32) -> String {
     let converted = generate_color(color, samples);
-    format!("{} {} {}", converted.r, converted.g, converted.b)
+    format!("{} {} {}\n", converted.r, converted.g, converted.b)
 }
 
 pub fn write_color(file: &mut File, color: &Color, samples: u32) -> Result<(), Error> {
@@ -33,3 +33,4 @@ fn generate_color(color: &Color, samples: u32) -> RGB {
         b: ((256. * b.clamp(0., 0.999)).floor()) as u32,
     }
 }
+
