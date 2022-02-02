@@ -29,6 +29,7 @@ struct ImageArgs {
     height: u32,
     samples: u32,
     max_depth: u32,
+    filename: String,
 }
 
 fn random_scene() -> HittableList {
@@ -99,19 +100,36 @@ fn ray_color<T: Hittable>(ray: &Ray, world: &T, depth: u32) -> Color {
     (1.0 - t) * Color::from(1.0, 1.0, 1.0) + t * Color::from(0.5, 0.7, 1.0)
 }
 
+// Logic for pasring command line image generation arguments
 fn parse_args(args: &Vec<String>) -> ImageArgs {
-    if args.len() < 4 {
-        eprintln!("Error parsing arguments: Expected 3 arguments, received {}",
-                    args.len() - 1);
-        process::exit(1);
+    // Basic help message
+    fn help() {
+        eprintln!("expected usage: rust_ray_trace <image width> <samples> <maximum depth> \
+                    <filename>");
+    }
+    
+    // Error and exit if not enough args
+    if args.len() < 5 {
+        if args.len() > 1 && args[1] == "help" {
+            help();
+            process::exit(0);
+        } else {
+            eprintln!("Error parsing arguments: Expected 4 arguments, received {}",
+                        args.len() - 1);
+            help();
+            process::exit(1);
+        }
     }
 
+    // Parse args, error and exit if not properly formatted
     let width: u32 = match args[1].parse() {
         Ok(n) => {
             n
         },
         Err(_) => {
-            eprintln!("Unable to parse \"{}\", should be an integer", args[1]);
+            eprintln!("Error parsing arguments: Expected a positive integer, \
+                        received \"{}\"", args[1]);
+            help();
             process::exit(1);
         },
     };
@@ -121,7 +139,9 @@ fn parse_args(args: &Vec<String>) -> ImageArgs {
             n
         },
         Err(_) => {
-            eprintln!("Unable to parse \"{}\", should be an integer", args[2]);
+            eprintln!("Error parsing arguments: Expected a positive integer, \
+                        received \"{}\"", args[2]);
+            help();
             process::exit(1);
         },
     };
@@ -130,16 +150,37 @@ fn parse_args(args: &Vec<String>) -> ImageArgs {
             n
         },
         Err(_) => {
-            eprintln!("Unable to parse \"{}\", should be an integer", args[3]);
+            eprintln!("Error parsing arguments: Expected a positive integer, \
+                        received \"{}\"", args[3]);
+            help();
             process::exit(1);
         },
     };
+    let filename = args[4].clone();
+
+    // Error and exit if args are not "sane" size"
+    if width < 100 {
+        eprintln!("Error parsing arguments: image width should be at least 100 pixels");
+        help();
+        process::exit(1);
+    }
+    if samples < 1 {
+        eprintln!("Error parsing arguments: samples should be at least 1");
+        help();
+        process::exit(1);
+    }
+    if max_depth < 1 {
+        eprintln!("Error parsing arguments: maximum depth should be at least 1");
+        help();
+        process::exit(1);
+    }
 
     ImageArgs {
         width,
         height,
         samples,
         max_depth,
+        filename,
     }
 }
 
@@ -161,8 +202,8 @@ fn main() {
                              ASPECT_RATIO, 0.1, 10.);
 
     // Actually generate image data
-    // 255 in header denotes max color value
-    let ppm_header = format!("P3\n{} {}\n255\n", image_args.width, image_args.height);
+    let ppm_header = format!("P3\n{} {}\n255\n", // 255 denotes maximum color value
+                                image_args.width, image_args.height);
 
     eprintln!("Generating...");
     let image_data =
@@ -185,9 +226,10 @@ fn main() {
 
     // Write final generated image
     let final_pic = format!("{}{}", ppm_header, image_data);
-    match fs::write("final.ppm", final_pic) {
+    match fs::write(format!("{}.ppm", image_args.filename), final_pic) {
         Ok(_) => eprintln!(
-                    "Image generated successfully! Output written to \"final.ppm\""),
+                    "Image generated successfully! Output written to \"{}.ppm\"",
+                        image_args.filename),
         Err(_) => eprintln!("Error writing image data"),
     }
 }
