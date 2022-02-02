@@ -1,3 +1,5 @@
+use std::env;
+use std::process;
 use std::fs;
 use std::sync::Arc;
 
@@ -21,10 +23,13 @@ use camera::*;
 use material::*;
 
 const ASPECT_RATIO: f32 = 3./2.;
-const IMAGE_WIDTH: u32 = 300;
-const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
-const SAMPLES: u32 = 50;
-const MAX_DEPTH: u32 = 10;
+
+struct ImageArgs {
+    width: u32,
+    height: u32,
+    samples: u32,
+    max_depth: u32,
+}
 
 fn random_scene() -> HittableList {
     let mut world = HittableList::new();
@@ -94,64 +99,96 @@ fn ray_color<T: Hittable>(ray: &Ray, world: &T, depth: u32) -> Color {
     (1.0 - t) * Color::from(1.0, 1.0, 1.0) + t * Color::from(0.5, 0.7, 1.0)
 }
 
+fn parse_args(args: &Vec<String>) -> ImageArgs {
+    if args.len() < 4 {
+        eprintln!("Error parsing arguments: Expected 3 arguments, received {}",
+                    args.len() - 1);
+        process::exit(1);
+    }
+
+    let width: u32 = match args[1].parse() {
+        Ok(n) => {
+            n
+        },
+        Err(_) => {
+            eprintln!("Unable to parse \"{}\", should be an integer", args[1]);
+            process::exit(1);
+        },
+    };
+    let height = (width as f32 / ASPECT_RATIO) as u32;
+    let samples: u32 = match args[2].parse() {
+        Ok(n) => {
+            n
+        },
+        Err(_) => {
+            eprintln!("Unable to parse \"{}\", should be an integer", args[2]);
+            process::exit(1);
+        },
+    };
+    let max_depth: u32 = match args[3].parse() {
+        Ok(n) => {
+            n
+        },
+        Err(_) => {
+            eprintln!("Unable to parse \"{}\", should be an integer", args[3]);
+            process::exit(1);
+        },
+    };
+
+    ImageArgs {
+        width,
+        height,
+        samples,
+        max_depth,
+    }
+}
+
 fn main() {
+    // Parse command line arguments
+    let args: Vec<String> = env::args().collect();
+    let image_args = parse_args(&args);
+
+    // Create randomized scene
+    eprintln!("Beginning {} x {} image with {} samples and a maximum depth of {}...",
+                image_args.width, image_args.height, image_args.samples,
+                image_args.max_depth);
     let world = random_scene();
 
-    // Camera
+    // Setup Camera
     let view_from = Point3::from(13., 2., 3.);
     let view_at = Point3::from(0., 0., 0.);
     let camera = Camera::new(view_from, view_at, Vec3::from(0., 1., 0.), 20.,
                              ASPECT_RATIO, 0.1, 10.);
 
-    // Rendering
+    // Actually generate image data
     // 255 in header denotes max color value
-    let ppm_header = format!("P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
+    let ppm_header = format!("P3\n{} {}\n255\n", image_args.width, image_args.height);
 
+    eprintln!("Generating...");
     let image_data =
-        (0..IMAGE_HEIGHT).into_par_iter().rev().map(|i| {
-            (0..IMAGE_WIDTH).into_par_iter().map(|j| {
+        (0..image_args.height).into_par_iter().rev().map(|i| {
+            (0..image_args.width).into_par_iter().map(|j| {
                 let mut rng = rand::thread_rng();
                 let mut pixel_color = Color::new();
-                for _ in 0..SAMPLES {
+                for _ in 0..image_args.samples {
                     let r1: f32 = rng.gen();
                     let r2: f32 = rng.gen();
-                    let u = (j as f32 + r1) / (IMAGE_WIDTH - 1) as f32;
-                    let v = (i as f32 + r2) / (IMAGE_HEIGHT - 1) as f32;
+                    let u = (j as f32 + r1) / (image_args.width - 1) as f32;
+                    let v = (i as f32 + r2) / (image_args.height - 1) as f32;
 
                     let ray = camera.get_ray(u, v);
-                    pixel_color += ray_color(&ray, &world, MAX_DEPTH);
+                    pixel_color += ray_color(&ray, &world, image_args.max_depth);
                 }
-                format_color(&pixel_color, SAMPLES) 
+                format_color(&pixel_color, image_args.samples) 
             }).collect::<Vec<String>>().join("")
         }).collect::<Vec<String>>().join("");
-    
-    let final_pic = format!("{}{}", ppm_header, image_data);
 
+    // Write final generated image
+    let final_pic = format!("{}{}", ppm_header, image_data);
     match fs::write("final.ppm", final_pic) {
-        Ok(_) => (),
+        Ok(_) => eprintln!(
+                    "Image generated successfully! Output written to \"final.ppm\""),
         Err(_) => eprintln!("Error writing image data"),
     }
- 
-/*
-    println!("P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
-
-    for i in (0..IMAGE_HEIGHT).rev() {
-        eprintln!("Scanlines remaining: {}", i);
-        for j in 0..IMAGE_WIDTH {
-            let mut pixel_color = Color::new();
-            for _ in 0..SAMPLES {
-                let r1: f32 = rng.gen();
-                let r2: f32 = rng.gen();
-                let u = (j as f32 + r1) / (IMAGE_WIDTH - 1) as f32;
-                let v = (i as f32 + r2) / (IMAGE_HEIGHT - 1) as f32;
-                
-                let ray = camera.get_ray(u, v);
-                pixel_color += ray_color(&ray, &world, MAX_DEPTH)
-            }
-            println!("{}", format_color(&pixel_color, SAMPLES));
-        }
-    }
-
-    eprintln!("Done.");
-*/
 }
+
