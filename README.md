@@ -20,3 +20,6 @@ The below is a 1200 x 800 render produced using this code with a sample rate of 
 - RNG is provided by the [`rand`](https://crates.io/crates/rand)
 - Multithreading is accomplished using [`rayon`](https://crates.io/crates/rayon)
 
+## License
+This software distributed under the (MIT License)[LICENSE]
+
