@@ -21,5 +21,5 @@ The below is a 1200 x 800 render produced using this code with a sample rate of 
 - Multithreading is accomplished using [`rayon`](https://crates.io/crates/rayon)
 
 ## License
-This software distributed under the (MIT License)[LICENSE]
+This software distributed under the [MIT License](LICENSE)
 
